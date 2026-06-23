@@ -3,7 +3,7 @@ const dotenv = require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = process.env.MONGODB_URI;
 
@@ -22,15 +22,29 @@ const run = async () => {
   try {
     await client.connect();
 
-    const db = client.db("promptly")
-    
+    const db = client.db("promptly");
+    const promptCollection = db.collection("prompts");
 
+    app.post("/api/prompts", async (req, res) => {
+      const data = req.body;
+      const promptInfo = {
+        ...data,
+        createdAt: new Date(),
+      };
+      const result = await promptCollection.insertOne(promptInfo);
+      res.send(result);
+    });
 
+    app.get("/api/prompts/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
 
-
-
-
-
+      const query = {
+        userId: id,
+      };
+      const result = await promptCollection.find(query).toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
