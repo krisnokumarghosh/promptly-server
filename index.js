@@ -37,12 +37,22 @@ const run = async () => {
 
     app.get("/api/prompts/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
 
       const query = {
         userId: id,
       };
       const result = await promptCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/api/prompt/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+
+      const result = await promptCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData },
+      );
       res.send(result);
     });
 
