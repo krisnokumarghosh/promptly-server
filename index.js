@@ -24,6 +24,7 @@ const run = async () => {
 
     const db = client.db("promptly");
     const promptCollection = db.collection("prompts");
+    const userCollection = db.collection("user");
 
     app.post("/api/prompts", async (req, res) => {
       const data = req.body;
@@ -62,6 +63,33 @@ const run = async () => {
         _id: new ObjectId(id),
       };
       const result = await promptCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/api/prompts", async (req, res) => {
+      const query = {};
+      if (req.query.status) {
+        query.status = req.query.status;
+      }
+
+      const cursor = promptCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/api/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/api/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData },
+      );
       res.send(result);
     });
 
