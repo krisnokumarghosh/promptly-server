@@ -72,6 +72,20 @@ const run = async () => {
         query.status = req.query.status;
       }
 
+      // pagination
+      if (req.query.page) {
+        const page = parseInt(req.query.page);
+        const perPage = parseInt(req.query.perPage) || 10;
+        const skipItems = (page - 1) * perPage;
+        const total = await promptCollection.countDocuments(query);
+        const cursor = promptCollection
+          .find(query)
+          .skip(skipItems)
+          .limit(perPage);
+        const prompts = await cursor.toArray();
+        return res.send({ total, prompts });
+      }
+
       const cursor = promptCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
