@@ -68,8 +68,39 @@ const run = async () => {
 
     app.get("/api/prompts", async (req, res) => {
       const query = {};
+      // search
+      if (req.query.search) {
+        query.$or = [
+          { title: { $regex: req.query.search, $options: "i" } },
+          { tags: { $regex: req.query.search, $options: "i" } },
+          { aiTool: { $regex: req.query.search, $options: "i" } },
+        ];
+      }
+
+      // filters
       if (req.query.status) {
         query.status = req.query.status;
+      }
+      if (req.query.category) {
+        query.category = req.query.category;
+      }
+      if (req.query.aiTool) {
+        query.aiTool = req.query.aiTool;
+      }
+      if (req.query.difficulty) {
+        query.difficulty = req.query.difficulty;
+      }
+
+      // sort
+      let sortOption = { createdAt: -1 };
+      if (req.query.sort === "popular") {
+        sortOption = { rating: -1 };
+      }
+      if (req.query.sort === "copied") {
+        sortOption = { copyCount: -1 };
+      }
+      if (req.query.sort === "latest") {
+        sortOption = { createdAt: -1 };
       }
 
       // pagination
@@ -80,14 +111,17 @@ const run = async () => {
         const total = await promptCollection.countDocuments(query);
         const cursor = promptCollection
           .find(query)
+          .sort(sortOption)
           .skip(skipItems)
           .limit(perPage);
         const prompts = await cursor.toArray();
         return res.send({ total, prompts });
       }
 
-      const cursor = promptCollection.find(query);
-      const result = await cursor.toArray();
+      const result = await promptCollection
+        .find(query)
+        .sort(sortOption)
+        .toArray();
       res.send(result);
     });
 
@@ -113,6 +147,15 @@ const run = async () => {
         _id: new ObjectId(id),
       };
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/api/prompt/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await promptCollection.findOne(query);
       res.send(result);
     });
 
