@@ -25,6 +25,7 @@ const run = async () => {
     const db = client.db("promptly");
     const promptCollection = db.collection("prompts");
     const userCollection = db.collection("user");
+    const reportedPromptsCollection = db.collection("reportedPrompts");
 
     app.post("/api/prompts", async (req, res) => {
       const data = req.body;
@@ -156,6 +157,30 @@ const run = async () => {
         _id: new ObjectId(id),
       };
       const result = await promptCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/api/prompts/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await promptCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $inc: { copyCount: 1 } },
+      );
+      res.send(result);
+    });
+
+    app.post("/api/reports", async (req, res) => {
+      const data = req.body;
+      const reportedInfo = {
+        ...data,
+        createdAt: new Date(),
+      };
+      const result = await reportedPromptsCollection.insertOne(reportedInfo);
+      res.send(result);
+    });
+    
+     app.get("/api/reports", async (req, res) => {
+      const result = await reportedPromptsCollection.find().toArray();
       res.send(result);
     });
 
