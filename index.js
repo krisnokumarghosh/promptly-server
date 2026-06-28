@@ -27,6 +27,7 @@ const run = async () => {
     const userCollection = db.collection("user");
     const reportedPromptsCollection = db.collection("reportedPrompts");
     const bookmarksCollection = db.collection("bookmarks");
+    const reviewCollection = db.collection("reviews");
 
     app.post("/api/prompts", async (req, res) => {
       const data = req.body;
@@ -246,6 +247,36 @@ const run = async () => {
       const result = await bookmarksCollection.deleteOne({
         _id: new ObjectId(id),
       });
+      res.send(result);
+    });
+
+    app.post("/api/reviews", async (req, res) => {
+      const data = req.body;
+      const reviewData = {
+        ...data,
+        createdAt: new Date(),
+      };
+      const result = await reviewCollection.insertOne(reviewData);
+      res.send(result);
+    });
+
+    app.get("/api/pid/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await reviewCollection
+        .find({
+          promptId: id,
+        })
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/api/uid/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await reviewCollection
+        .find({
+          userId: id,
+        })
+        .toArray();
       res.send(result);
     });
 
