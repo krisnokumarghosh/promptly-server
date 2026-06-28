@@ -26,6 +26,7 @@ const run = async () => {
     const promptCollection = db.collection("prompts");
     const userCollection = db.collection("user");
     const reportedPromptsCollection = db.collection("reportedPrompts");
+    const bookmarksCollection = db.collection("bookmarks");
 
     app.post("/api/prompts", async (req, res) => {
       const data = req.body;
@@ -192,14 +193,59 @@ const run = async () => {
         _id: new ObjectId(id),
       };
 
-      if (req.body) {
+      if (req.body.promptId) {
         const result = await promptCollection.deleteOne({
           _id: new ObjectId(req.body.promptId),
         });
-        res.send(result);
       }
 
       const result = await reportedPromptsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.post("/api/bookmark", async (req, res) => {
+      const data = req.body;
+      const bookmarkData = {
+        ...data,
+        createdAt: new Date(),
+      };
+
+      if (data.promptId) {
+        const result = await promptCollection.updateOne(
+          { _id: new ObjectId(data.promptId) },
+          {
+            $inc: {
+              bookmarkCount: 1,
+            },
+          },
+        );
+      }
+      const result = await bookmarksCollection.insertOne(bookmarkData);
+      res.send(result);
+    });
+
+    app.get("/api/get/bookmark/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await bookmarksCollection.find({ userId: id }).toArray();
+      res.send(result);
+    });
+
+    app.delete("/api/d/bookmark/:id", async (req, res) => {
+      const id = req.params.id;
+      if (req.body.promptId) {
+        const result = await promptCollection.updateOne(
+          { _id: new ObjectId(req.body.promptId) },
+          {
+            $inc: {
+              bookmarkCount: -1,
+            },
+          },
+        );
+      }
+
+      const result = await bookmarksCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
 
