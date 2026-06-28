@@ -178,9 +178,28 @@ const run = async () => {
       const result = await reportedPromptsCollection.insertOne(reportedInfo);
       res.send(result);
     });
-    
-     app.get("/api/reports", async (req, res) => {
+
+    app.get("/api/reports", async (req, res) => {
       const result = await reportedPromptsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/api/report/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      if (req.body) {
+        const result = await promptCollection.deleteOne({
+          _id: new ObjectId(req.body.promptId),
+        });
+        res.send(result);
+      }
+
+      const result = await reportedPromptsCollection.deleteOne(query);
       res.send(result);
     });
 
