@@ -29,6 +29,7 @@ const run = async () => {
     const bookmarksCollection = db.collection("bookmarks");
     const reviewCollection = db.collection("reviews");
     const sessionCollection = db.collection("session");
+    const paymentCollection = db.collection("payments");
 
     // verification
     const verifyToken = async (req, res, next) => {
@@ -59,28 +60,28 @@ const run = async () => {
       next();
     };
 
-     const verifyUser = async (req, res, next) => {
+    const verifyUser = async (req, res, next) => {
       if (req.user?.role !== "user") {
         return res.status(403).send({ message: "forbidden" });
       }
       next();
     };
 
-     const verifyCreator = async (req, res, next) => {
+    const verifyCreator = async (req, res, next) => {
       if (req.user?.role !== "creator") {
         return res.status(403).send({ message: "forbidden" });
       }
       next();
     };
 
-      const verifyAdmin = async (req, res, next) => {
+    const verifyAdmin = async (req, res, next) => {
       if (req.user?.role !== "admin") {
         return res.status(403).send({ message: "forbidden" });
       }
       next();
     };
 
-    app.post("/api/prompts", verifyToken, async (req, res) => {
+    app.post("/api/prompts", async (req, res) => {
       const data = req.body;
       const promptInfo = {
         ...data,
@@ -90,7 +91,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/prompts/:id", verifyToken, async (req, res) => {
+    app.get("/api/prompts/:id", async (req, res) => {
       const id = req.params.id;
 
       const query = {
@@ -100,7 +101,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.patch("/api/prompt/:id", verifyToken, async (req, res) => {
+    app.patch("/api/prompt/:id", async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
 
@@ -111,7 +112,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.delete("/api/prompt/:id", verifyToken, async (req, res) => {
+    app.delete("/api/prompt/:id", async (req, res) => {
       const id = req.params.id;
       const query = {
         _id: new ObjectId(id),
@@ -179,12 +180,12 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/users", verifyToken, async (req, res) => {
+    app.get("/api/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    app.patch("/api/users/:id", verifyToken, async (req, res) => {
+    app.patch("/api/users/:id", async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
 
@@ -195,7 +196,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.delete("/api/users/:id", verifyToken, async (req, res) => {
+    app.delete("/api/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = {
         _id: new ObjectId(id),
@@ -204,7 +205,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/prompt/:id", verifyToken, async (req, res) => {
+    app.get("/api/prompt/:id", async (req, res) => {
       const id = req.params.id;
       const query = {
         _id: new ObjectId(id),
@@ -213,7 +214,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.patch("/api/prompts/:id", verifyToken, async (req, res) => {
+    app.patch("/api/prompts/:id", async (req, res) => {
       const id = req.params.id;
       const result = await promptCollection.updateOne(
         { _id: new ObjectId(id) },
@@ -222,7 +223,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.post("/api/reports", verifyToken, async (req, res) => {
+    app.post("/api/reports", async (req, res) => {
       const data = req.body;
       const reportedInfo = {
         ...data,
@@ -232,12 +233,12 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/reports", verifyToken, async (req, res) => {
+    app.get("/api/reports", async (req, res) => {
       const result = await reportedPromptsCollection.find().toArray();
       res.send(result);
     });
 
-    app.delete("/api/report/:id", verifyToken, async (req, res) => {
+    app.delete("/api/report/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
 
@@ -255,7 +256,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.post("/api/bookmark", verifyToken, async (req, res) => {
+    app.post("/api/bookmark", async (req, res) => {
       const data = req.body;
       const bookmarkData = {
         ...data,
@@ -276,13 +277,13 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/get/bookmark/:id", verifyToken, async (req, res) => {
+    app.get("/api/get/bookmark/:id", async (req, res) => {
       const id = req.params.id;
       const result = await bookmarksCollection.find({ userId: id }).toArray();
       res.send(result);
     });
 
-    app.delete("/api/d/bookmark/:id", verifyToken, async (req, res) => {
+    app.delete("/api/d/bookmark/:id", async (req, res) => {
       const id = req.params.id;
       if (req.body.promptId) {
         const result = await promptCollection.updateOne(
@@ -301,7 +302,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.post("/api/reviews", verifyToken, async (req, res) => {
+    app.post("/api/reviews", async (req, res) => {
       const data = req.body;
       const reviewData = {
         ...data,
@@ -311,7 +312,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/pid/reviews/:id", verifyToken, async (req, res) => {
+    app.get("/api/pid/reviews/:id", async (req, res) => {
       const id = req.params.id;
       const result = await reviewCollection
         .find({
@@ -321,7 +322,7 @@ const run = async () => {
       res.send(result);
     });
 
-    app.get("/api/uid/reviews/:id", verifyToken, async (req, res) => {
+    app.get("/api/uid/reviews/:id", async (req, res) => {
       const id = req.params.id;
       const result = await reviewCollection
         .find({
@@ -329,6 +330,22 @@ const run = async () => {
         })
         .toArray();
       res.send(result);
+    });
+
+    app.post("/api/payment", async (req, res) => {
+      const data = req.body;
+      const paymentData = {
+        ...data,
+        createdAt: new Date(),
+      };
+      if (data.userId) {
+        const result = await userCollection.updateOne(
+          { _id: new ObjectId(data.userId) },
+          { $set: { plan: "Pro" } },
+        );
+      }
+      const result = await paymentCollection.insertOne(paymentData);
+      res.send(result)
     });
 
     await client.db("admin").command({ ping: 1 });
