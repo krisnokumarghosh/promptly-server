@@ -345,7 +345,12 @@ const run = async () => {
         );
       }
       const result = await paymentCollection.insertOne(paymentData);
-      res.send(result)
+      res.send(result);
+    });
+
+    app.get("/api/payments", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
