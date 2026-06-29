@@ -30,6 +30,7 @@ const run = async () => {
     const reviewCollection = db.collection("reviews");
     const sessionCollection = db.collection("session");
     const paymentCollection = db.collection("payments");
+    const featureCollection = db.collection("features");
 
     // verification
     const verifyToken = async (req, res, next) => {
@@ -312,6 +313,11 @@ const run = async () => {
       res.send(result);
     });
 
+    app.get("/api/reviews", async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+
     app.get("/api/pid/reviews/:id", async (req, res) => {
       const id = req.params.id;
       const result = await reviewCollection
@@ -350,6 +356,41 @@ const run = async () => {
 
     app.get("/api/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/api/feature", async (req, res) => {
+      const data = req.body;
+      if (data._id) {
+        const result = await promptCollection.updateOne(
+          { _id: new ObjectId(data._id) },
+          { $set: { feature: "featured" } },
+        );
+      }
+      const result = await featureCollection.insertOne(data);
+      res.send(result);
+    });
+
+    
+    app.get("/api/featured", async (req, res) => {
+      const result = await promptCollection
+        .aggregate([
+          {
+            $match: {
+              status: "approved",
+            },
+          },
+
+          {
+            $sort: { copyCount: -1 },
+          },
+
+          {
+            $limit: 6,
+          },
+        ])
+        .toArray();
+
       res.send(result);
     });
 
